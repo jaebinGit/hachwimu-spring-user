@@ -1,2 +1,2 @@
 # hachwimu-spring
-hachwimu-spring repo
+hachwimu-spring-user repo
