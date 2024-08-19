@@ -1,6 +1,7 @@
 package com.example.oliveyoung.service;
 
 import com.example.oliveyoung.dto.JwtResponse;
+import com.example.oliveyoung.dto.UserRegistrationRequest;
 import com.example.oliveyoung.model.User;
 import com.example.oliveyoung.repository.UserRepository;
 import com.example.oliveyoung.config.JwtTokenUtil;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,6 +26,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     // 로그인 처리
     public JwtResponse login(User user) throws Exception {
@@ -63,5 +68,23 @@ public class UserService {
         } else {
             throw new Exception("INVALID_REFRESH_TOKEN");
         }
+    }
+
+    // 회원가입 처리 메서드
+    public void registerUser(UserRegistrationRequest registrationRequest) throws Exception {
+        // 중복된 사용자명 확인
+        if (userRepository.existsByUsername(registrationRequest.getUsername())) {
+            throw new Exception("이미 존재하는 사용자명입니다.");
+        }
+
+        // 사용자 엔티티 생성
+        User user = new User();
+        user.setUsername(registrationRequest.getUsername());
+        user.setPassword(passwordEncoder.encode(registrationRequest.getPassword())); // 비밀번호 암호화
+        user.setEmail(registrationRequest.getEmail());
+        user.setAddress(registrationRequest.getAddress());
+
+        // 사용자 저장
+        userRepository.save(user);
     }
 }

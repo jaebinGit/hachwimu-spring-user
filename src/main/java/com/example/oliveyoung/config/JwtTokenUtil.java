@@ -64,22 +64,7 @@ public class JwtTokenUtil {
 
     // Refresh Token 유효성 확인 (블랙리스트 확인)
     public Boolean validateRefreshToken(String refreshToken) {
-        // 블랙리스트에 있는지 확인
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + refreshToken))) {
-            return false; // 블랙리스트에 있으면 유효하지 않음
-        }
-        return redisTemplate.hasKey(refreshToken); // 블랙리스트에 없으면 기존 방식으로 확인
-    }
-
-    // 토큰 검증
-    public Boolean validateToken(String token, UserDetails userDetails) {
-        String username = Jwts.parserBuilder()
-                .setSigningKey(publicKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        return redisTemplate.hasKey(refreshToken);
     }
 
     // JWT에서 사용자명 추출
@@ -92,7 +77,15 @@ public class JwtTokenUtil {
                 .getSubject();
     }
 
-    // JWT 만료 여부 확인
+    public Boolean validateToken(String token, UserDetails userDetails) {
+        // JWT에서 사용자명 추출
+        String username = getUsernameFromToken(token);
+
+        // 토큰이 만료되지 않았는지 확인하고, 토큰에 있는 사용자명과 UserDetails의 사용자명이 일치하는지 확인
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+
+    // JWT에서 토큰의 만료 여부 확인
     private Boolean isTokenExpired(String token) {
         Date expiration = Jwts.parserBuilder()
                 .setSigningKey(SECRET_KEY)
@@ -103,9 +96,8 @@ public class JwtTokenUtil {
         return expiration.before(new Date());
     }
 
-    // Refresh Token 무효화 (로그아웃 시 블랙리스트에 추가)
     public void invalidateRefreshToken(String refreshToken) {
-        // 블랙리스트에 추가
-        redisTemplate.opsForValue().set(BLACKLIST_PREFIX + refreshToken, true, REFRESH_TOKEN_VALIDITY, TimeUnit.MILLISECONDS);
+        // Redis에서 Refresh Token 삭제 (무효화)
+        redisTemplate.delete(refreshToken);
     }
 }
