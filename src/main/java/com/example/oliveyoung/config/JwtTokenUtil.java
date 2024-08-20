@@ -54,7 +54,7 @@ public class JwtTokenUtil {
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_VALIDITY))
-                .signWith(SECRET_KEY)
+                .signWith(privateKey, SignatureAlgorithm.RS256)
                 .compact();
 
         // Redis에 Refresh Token 저장
@@ -70,7 +70,7 @@ public class JwtTokenUtil {
     // JWT에서 사용자명 추출
     public String getUsernameFromToken(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY)
+                .setSigningKey(publicKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
@@ -88,7 +88,7 @@ public class JwtTokenUtil {
     // JWT에서 토큰의 만료 여부 확인
     private Boolean isTokenExpired(String token) {
         Date expiration = Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY)
+                .setSigningKey(publicKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
