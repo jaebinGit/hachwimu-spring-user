@@ -9,9 +9,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("https://www.hachwimu.com:3000", "https://www.hachwimu.com:80", "https://www.hachwimu.com:443", "https://www.hachwimu.com:8080", "https://www.hachwimu.com")
+                .allowedOrigins("*")  // 모든 도메인 허용
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(true);
+                .allowCredentials(false); // allowCredentials가 true일 경우 allowedOrigins에 '*'를 사용할 수 없습니다.
     }
 }
