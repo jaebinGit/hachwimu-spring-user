@@ -74,6 +74,8 @@ jobs:
       # 8. IaC Private Repo에 이미지 태그 업데이트 (Argo CD 자동 배포)
       - name: Clone IaC Repo and Update Tag
         run: |
+          TAG=${{ github.sha }}
+          
           # SSH 방식으로 리포지토리 클론
           git clone git@github.com:JinsuYeo/hachwimu-iac.git
           cd hachwimu-iac
