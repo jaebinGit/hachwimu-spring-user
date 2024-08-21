@@ -82,3 +82,4 @@ jobs:
           git add deployment.yaml
           git commit -m "Update image to ${TAG}"
           git push origin main  # SSH 방식으로 푸시
+      #진짜 되냐
