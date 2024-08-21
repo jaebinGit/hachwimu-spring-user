@@ -16,7 +16,7 @@ jobs:
 
       # 2. SSH 설정 (다른 사람의 Private Repo 접근용)
       - name: Setup SSH key for accessing IaC repo
-        uses: webfactory/ssh-agent@v0.7.0  # Node.js 16 이상 지원 버전으로 업데이트
+        uses: webfactory/ssh-agent@<latest-version>  # 향후 Node.js 20을 지원하는 최신 버전
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
