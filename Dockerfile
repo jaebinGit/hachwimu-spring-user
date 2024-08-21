@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends git openssh-cli
 # Add the SSH private key from the build argument and set up SSH config
 ARG SSH_PRIVATE_KEY_BUILD
 RUN mkdir -p ~/.ssh && \
-    echo "$SSH_PRIVATE_KEY_BUILD" | sed 's/\\n/\n/g' > ~/.ssh/id_rsa && \
+    echo "$SSH_PRIVATE_KEY_BUILD" > ~/.ssh/id_rsa && \
     chmod 600 ~/.ssh/id_rsa && \
     ssh-keyscan github.com >> ~/.ssh/known_hosts
 
