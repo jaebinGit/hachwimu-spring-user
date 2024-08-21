@@ -33,6 +33,7 @@ jobs:
         run: |
           TAG=${{ github.sha }}  # 현재 커밋의 SHA를 도커 이미지 태그로 사용
           DOCKER_BUILDKIT=1 docker build --no-cache --platform linux/amd64 \
+            --build-arg SSH_PRIVATE_KEY="${{ secrets.SSH_PRIVATE_KEY_BUILD }}" \  # Dockerfile 빌드에 사용될 SSH 키
             --build-arg SPRING_APPLICATION_NAME=oliveyoung \
             --build-arg SPRING_DATASOURCE_WRITER_URL=${{ secrets.SPRING_DATASOURCE_WRITER_URL }} \
             --build-arg SPRING_DATASOURCE_READER_URL=${{ secrets.SPRING_DATASOURCE_READER_URL }} \
@@ -62,7 +63,7 @@ jobs:
       - name: Setup SSH key for accessing IaC repo
         uses: webfactory/ssh-agent@v0.9.0  # 최신 버전
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY_IAC }}  # IaC repo에 접근하는 SSH 키
 
       # 7. IaC Private Repo에 이미지 태그 업데이트 (Argo CD 자동 배포)
       - name: Update IaC Private Repo with new ECR tag
