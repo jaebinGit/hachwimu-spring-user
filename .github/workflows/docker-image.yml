@@ -33,7 +33,7 @@ jobs:
         run: |
           TAG=${{ github.sha }}  # 현재 커밋의 SHA를 도커 이미지 태그로 사용
           DOCKER_BUILDKIT=1 docker build --no-cache --platform linux/amd64 \
-            --build-arg SSH_PRIVATE_KEY="${{ secrets.SSH_PRIVATE_KEY_BUILD }}" \  # Dockerfile 빌드에 사용될 SSH 키
+            --build-arg SSH_PRIVATE_KEY="${{ secrets.SSH_PRIVATE_KEY_BUILD }}" \
             --build-arg SPRING_APPLICATION_NAME=oliveyoung \
             --build-arg SPRING_DATASOURCE_WRITER_URL=${{ secrets.SPRING_DATASOURCE_WRITER_URL }} \
             --build-arg SPRING_DATASOURCE_READER_URL=${{ secrets.SPRING_DATASOURCE_READER_URL }} \
@@ -49,7 +49,8 @@ jobs:
             --build-arg SPRING_DATASOURCE_HIKARI_MAX_LIFETIME=${{ secrets.SPRING_DATASOURCE_HIKARI_MAX_LIFETIME }} \
             --build-arg SPRING_DATA_REDIS_HOST=${{ secrets.SPRING_DATA_REDIS_HOST }} \
             --build-arg SPRING_DATA_REDIS_PORT=${{ secrets.SPRING_DATA_REDIS_PORT }} \
-            -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/hachwimu-user:$TAG .
+            -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/hachwimu-user:$TAG \
+            .
 
       # 5. ECR에 도커 이미지 푸시
       - name: Push to Amazon ECR
