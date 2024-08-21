@@ -12,18 +12,22 @@ jobs:
     steps:
       # 1. 리포지토리 클론
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4  # 최신 버전으로 업데이트
 
       # 2. SSH 설정 (다른 사람의 Private Repo 접근용)
       - name: Setup SSH key for accessing IaC repo
-        uses: webfactory/ssh-agent@v0.5.3
+        uses: webfactory/ssh-agent@v0.7.0  # Node.js 16 이상 지원 버전으로 업데이트
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       # 3. AWS 로그인
       - name: Log in to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2  # 최신 버전으로 업데이트
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ap-northeast-2
 
       # 4. 도커 이미지 빌드
       - name: Build Docker image
@@ -60,12 +64,11 @@ jobs:
         env:
           TAG: ${{ github.sha }}
         run: |
-          git clone https://github.com/JinsuYeo/hachwimu-iac.git  # 다른 사람의 Private IaC Repo URL 사용
+          # SSH 방식으로 리포지토리 클론
+          git clone git@github.com:JinsuYeo/hachwimu-iac.git
           cd hachwimu-iac
           # user 이미지 태그 업데이트
           sed -i 's|image: .*hachwimu-user:.*$|image: '"${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/hachwimu-user:${TAG}"'|g' deployment.yaml
-          # product 이미지 태그 업데이트
-          sed -i 's|image: .*hachwimu-product:.*$|image: '"${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/hachwimu-product:${TAG}"'|g' deployment.yaml
           git add deployment.yaml
           git commit -m "Update image to $TAG"
-          git push
+          git push origin main  # SSH 방식으로 푸시
