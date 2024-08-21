@@ -49,8 +49,7 @@ jobs:
             --build-arg SPRING_DATASOURCE_HIKARI_MAX_LIFETIME=${{ secrets.SPRING_DATASOURCE_HIKARI_MAX_LIFETIME }} \
             --build-arg SPRING_DATA_REDIS_HOST=${{ secrets.SPRING_DATA_REDIS_HOST }} \
             --build-arg SPRING_DATA_REDIS_PORT=${{ secrets.SPRING_DATA_REDIS_PORT }} \
-            -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/hachwimu-user:$TAG \
-            .
+            -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/hachwimu-user:$TAG .
 
       # 5. ECR에 도커 이미지 푸시
       - name: Push to Amazon ECR
@@ -66,12 +65,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY_IAC }}  # IaC repo에 접근하는 SSH 키
 
-      # 7. github 설정
+      # 7. GitHub 사용자 설정
       - name: Set Git config
         run: |
           git config --global user.name "jaebinGit"
-          git config --global user.email "tnwoql327@gmial.com"
-
+          git config --global user.email "tnwoql327@gmail.com"
 
       # 8. IaC Private Repo에 이미지 태그 업데이트 (Argo CD 자동 배포)
       - name: Clone IaC Repo and Update Tag
@@ -80,8 +78,7 @@ jobs:
           git clone git@github.com:JinsuYeo/hachwimu-iac.git
           cd hachwimu-iac
           # user 이미지 태그 업데이트
-          sed -i 's|image: .*hachwimu-user:.*$|image: '"***.dkr.ecr.ap-northeast-2.amazonaws.com/hachwimu-user:${TAG}"'|g' deployment.yaml
+          sed -i 's|image: .*hachwimu-user:.*$|image: '"${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/hachwimu-user:${TAG}"'|g' deployment.yaml
           git add deployment.yaml
           git commit -m "Update image to $TAG"
           git push origin main  # SSH 방식으로 푸시
-          
