@@ -28,6 +28,9 @@ jobs:
         with:
           registry-type: private  # ECR 리포지토리 타입
 
+      - name: Debug SSH Key
+        run: echo "$SSH_PRIVATE_KEY_BUILD"
+
       # 4. 도커 이미지 빌드
       - name: Build Docker image
         run: |
