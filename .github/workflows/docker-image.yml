@@ -78,7 +78,7 @@ jobs:
           git clone git@github.com:JinsuYeo/hachwimu-iac.git
           cd hachwimu-iac
           # user 이미지 태그 업데이트
-          sed -i 's|image: \([0-9]\+\)\.dkr\.ecr\.ap-northeast-2\.amazonaws\.com/hachwimu-user:.*$|image: '"${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/hachwimu-user:${TAG}"'|g' deployment.yaml
+          sed -i "s|image: .*hachwimu-user:.*$|image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/hachwimu-user:${TAG}|g" deployment.yaml
           git add deployment.yaml
-          git commit -m "Update image to $TAG"
+          git commit -m "Update image to ${TAG}"
           git push origin main  # SSH 방식으로 푸시
