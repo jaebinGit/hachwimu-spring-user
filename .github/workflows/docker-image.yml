@@ -14,12 +14,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4  # 최신 버전으로 업데이트
 
-      # 2. SSH 설정 (다른 사람의 Private Repo 접근용)
-      - name: Setup SSH key for accessing IaC repo
-        uses: webfactory/ssh-agent@v0.9.0  # 향후 Node.js 20을 지원하는 최신 버전
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
       # 3. AWS 로그인
       - name: Log in to Amazon ECR
         id: login-ecr
@@ -72,3 +66,9 @@ jobs:
           git add deployment.yaml
           git commit -m "Update image to $TAG"
           git push origin main  # SSH 방식으로 푸시
+
+      # 2. SSH 설정 (다른 사람의 Private Repo 접근용)
+      - name: Setup SSH key for accessing IaC repo
+        uses: webfactory/ssh-agent@v0.9.0  # 향후 Node.js 20을 지원하는 최신 버전
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
