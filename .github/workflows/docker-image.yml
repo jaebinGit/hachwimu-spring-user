@@ -70,13 +70,18 @@ jobs:
       - name: Set Git config
         run: |
           git config --global user.name "jaebinGit"
-          git config --global user.email "tnwoql327@gmain.com"
+          git config --global user.email "tnwoql327@gmial.com"
 
 
       # 8. IaC Private Repo에 이미지 태그 업데이트 (Argo CD 자동 배포)
-      - name: Update IaC Private Repo with new ECR tag
-        env:
-          TAG: ${{ github.sha }}
+      - name: Clone IaC Repo and Update Tag
         run: |
           # SSH 방식으로 리포지토리 클론
+          git clone git@github.com:JinsuYeo/hachwimu-iac.git
+          cd hachwimu-iac
+          # user 이미지 태그 업데이트
+          sed -i 's|image: .*hachwimu-user:.*$|image: '"***.dkr.ecr.ap-northeast-2.amazonaws.com/hachwimu-user:${TAG}"'|g' deployment.yaml
+          git add deployment.yaml
+          git commit -m "Update image to $TAG"
+          git push origin main  # SSH 방식으로 푸시
           
