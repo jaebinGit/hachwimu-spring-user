@@ -77,9 +77,21 @@ jobs:
           # SSH 방식으로 리포지토리 클론
           git clone git@github.com:JinsuYeo/hachwimu-iac.git
           cd hachwimu-iac
+          
+          # 디버깅용 TAG와 패턴 확인
+          echo "TAG is ${TAG}"
+          
           # user 이미지 태그 업데이트
+          echo "Updating image tag in deployment.yaml"
           sed -i "s|image: .*hachwimu-user:.*$|image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/hachwimu-user:${TAG}|g" deployment.yaml
+          
+          # 변경 내용 확인
+          echo "Updated deployment.yaml:"
+          cat deployment.yaml
+          
+          # Git에 변경 사항 추가 및 커밋
           git add deployment.yaml
-          git commit -m "Update image to ${TAG}"
-          git push origin main  # SSH 방식으로 푸시
-      #진짜 되냐
+          git status
+          git diff
+          git commit -m "Update image to ${TAG}" || echo "Nothing to commit"
+          git push origin main || echo "Push failed"
