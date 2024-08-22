@@ -37,25 +37,28 @@ public class JwtTokenUtil {
         this.publicKey = keyPair.getPublic();
     }
 
-    // Access Token 생성
+    // Access Token 생성 (RS256 알고리즘 사용, 클레임 최소화)
     public String generateAccessToken(UserDetails userDetails) {
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_VALIDITY))
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_VALIDITY)) // 15분
                 .signWith(privateKey, SignatureAlgorithm.RS256)
+                .claim("roles", userDetails.getAuthorities()) // 권한 정보 추가
                 .compact();
     }
 
-    // Refresh Token 생성 및 Redis에 저장
+    // Refresh Token 생성 및 Redis에 저장 (서명 정보 축소, 클레임 최소화)
     public String generateRefreshToken(UserDetails userDetails) {
         String refreshToken = Jwts.builder()
                 .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_VALIDITY))
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_VALIDITY)) // 7일
+                .claim("tokenType", "refresh") // Refresh Token임을 명시
                 .signWith(privateKey, SignatureAlgorithm.RS256)
                 .compact();
 
+        // Redis에 Refresh Token을 저장하여 상태 확인 가능 (옵션)
         redisTemplate.opsForValue().set(refreshToken, userDetails.getUsername(), REFRESH_TOKEN_VALIDITY, TimeUnit.MILLISECONDS);
         return refreshToken;
     }
