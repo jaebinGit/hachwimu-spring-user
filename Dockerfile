@@ -9,7 +9,7 @@ ENV APP_HOME=/app \
 # Set the working directory
 WORKDIR $APP_HOME
 
-# Install required packages in a single RUN command to minimize layers and improve cache efficiency
+# Install required packages
 RUN apt-get update && apt-get install -y --no-install-recommends git openssh-client ca-certificates && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -20,21 +20,18 @@ RUN mkdir -p ~/.ssh && \
     chmod 600 ~/.ssh/id_rsa && \
     ssh-keyscan github.com >> ~/.ssh/known_hosts
 
-# Clone the Private Git Repository using SSH (in one step to minimize layers)
+# Clone the Private Git Repository using SSH
 RUN git clone git@github.com:jaebinGit/hachwimu-spring-user.git .
 
-# Remove SSH key and other sensitive data after cloning the repository
+# Remove sensitive data after cloning
 RUN rm -rf ~/.ssh/id_rsa
 
-# Copy Gradle wrapper and related files to leverage cache for dependency resolution
+# Copy Gradle wrapper files and build project
 COPY ./gradlew ./gradlew
 COPY ./gradle ./gradle
 
-# Download dependencies and build the project without using Gradle cache
-RUN ./gradlew clean build --no-daemon --refresh-dependencies -x test && \
-    rm -rf ~/.gradle/caches/ && \
-    rm -rf /app/.gradle && \
-    rm -rf /root/.gradle
+# Download dependencies and build the project
+RUN ./gradlew clean build --no-daemon --refresh-dependencies -x test
 
 # Production Stage
 FROM openjdk:17-jdk-slim
@@ -48,7 +45,5 @@ COPY --from=build /app/build/libs/oliveyoung-0.0.1-SNAPSHOT.jar app.jar
 # Expose the application port
 EXPOSE 8080
 
-# Run the application
+# Run the application with environment variables
 ENTRYPOINT ["java", "-jar", "app.jar"]
-
-#test
