@@ -5,6 +5,8 @@ import com.example.oliveyoung.dto.UserRegistrationRequest;
 import com.example.oliveyoung.dto.UserResponse;
 import com.example.oliveyoung.model.User;
 import com.example.oliveyoung.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -32,27 +34,61 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody User user) {
+    public ResponseEntity<?> login(@RequestBody User user, HttpServletResponse response) {
         try {
-            JwtResponse jwtResponse = userService.login(user);
-            return ResponseEntity.ok(jwtResponse);
+            JwtResponse jwtResponse = userService.login(user, response);
+
+            // Access token을 쿠키에 저장
+            Cookie accessTokenCookie = new Cookie("accessToken", jwtResponse.getAccessToken());
+            accessTokenCookie.setHttpOnly(true);  // JavaScript에서 접근 불가
+            accessTokenCookie.setPath("/");
+            accessTokenCookie.setMaxAge(15 * 60);  // 15분
+            response.addCookie(accessTokenCookie);
+
+            // Refresh token을 쿠키에 저장
+            Cookie refreshTokenCookie = new Cookie("refreshToken", jwtResponse.getRefreshToken());
+            refreshTokenCookie.setHttpOnly(true);
+            refreshTokenCookie.setPath("/");
+            refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);  // 7일
+            response.addCookie(refreshTokenCookie);
+
+            return ResponseEntity.ok("Logged in successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader("Authorization") String token) {
-        String refreshToken = token.substring(7); // "Bearer " 제거
-        userService.logout(refreshToken);
+    public ResponseEntity<?> logout(@CookieValue("refreshToken") String refreshToken, String accessToken, HttpServletResponse response) {
+        userService.logout(refreshToken, accessToken);
+
+        // 쿠키에서 토큰 제거
+        Cookie accessTokenCookie = new Cookie("accessToken", null);
+        accessTokenCookie.setMaxAge(0);  // 쿠키 삭제
+        accessTokenCookie.setPath("/");
+        response.addCookie(accessTokenCookie);
+
+        Cookie refreshTokenCookie = new Cookie("refreshToken", null);
+        refreshTokenCookie.setMaxAge(0);
+        refreshTokenCookie.setPath("/");
+        response.addCookie(refreshTokenCookie);
+
         return ResponseEntity.ok("Logged out successfully");
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestBody String refreshToken) {
+    public ResponseEntity<?> refreshToken(@CookieValue("refreshToken") String refreshToken, HttpServletResponse response) {
         try {
             JwtResponse jwtResponse = userService.refreshAccessToken(refreshToken);
-            return ResponseEntity.ok(jwtResponse);
+
+            // 새롭게 발급된 Access Token을 쿠키에 저장
+            Cookie accessTokenCookie = new Cookie("accessToken", jwtResponse.getAccessToken());
+            accessTokenCookie.setHttpOnly(true);  // JavaScript에서 접근 불가
+            accessTokenCookie.setPath("/");
+            accessTokenCookie.setMaxAge(15 * 60);  // 15분
+            response.addCookie(accessTokenCookie);
+
+            return ResponseEntity.ok("Token refreshed successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

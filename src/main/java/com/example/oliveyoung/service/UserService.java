@@ -5,6 +5,8 @@ import com.example.oliveyoung.dto.UserRegistrationRequest;
 import com.example.oliveyoung.model.User;
 import com.example.oliveyoung.repository.UserRepository;
 import com.example.oliveyoung.config.JwtTokenUtil;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,35 +33,45 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
     // 로그인 처리
-    public JwtResponse login(User user) throws Exception {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
-        } catch (Exception e) {
-            throw new Exception("INVALID_CREDENTIALS", e);
-        }
+    public JwtResponse login(User user, HttpServletResponse response) throws Exception {
+        // 인증 수행
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
+        );
 
-        final UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(user.getUsername());
-        final String accessToken = jwtTokenUtil.generateAccessToken(userDetails);
-        final String refreshToken = jwtTokenUtil.generateRefreshToken(userDetails);
+        // 사용자 정보 로드
+        UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(user.getUsername());
+
+        // 토큰 생성
+        String accessToken = jwtTokenUtil.generateAccessToken(userDetails);
+        String refreshToken = jwtTokenUtil.generateRefreshToken(userDetails);
+
+        // Access Token을 쿠키에 저장
+        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setMaxAge((int) jwtTokenUtil.getAccessTokenValidity() / 1000);
+        accessTokenCookie.setPath("/");
+        response.addCookie(accessTokenCookie);
 
         return new JwtResponse(accessToken, refreshToken);
     }
 
     // 로그아웃 처리
-    public void logout(String refreshToken) {
-        jwtTokenUtil.invalidateRefreshToken(refreshToken);
+    public void logout(String refreshToken, String accessToken) {
+        jwtTokenUtil.invalidateRefreshToken(refreshToken); // Refresh Token 무효화
+        jwtTokenUtil.invalidateAccessToken(accessToken);   // Access Token 블랙리스트 추가
     }
 
     // Refresh Token을 이용한 Access Token 갱신
+    // Access Token 재발급
     public JwtResponse refreshAccessToken(String refreshToken) throws Exception {
         if (jwtTokenUtil.validateRefreshToken(refreshToken)) {
             String username = jwtTokenUtil.getUsernameFromToken(refreshToken);
             UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(username);
 
-            // 새로운 Access Token과 Refresh Token 발급
-            final String newAccessToken = jwtTokenUtil.generateAccessToken(userDetails);
-            final String newRefreshToken = jwtTokenUtil.generateRefreshToken(userDetails);
+            // 새로운 Access Token 생성
+            String newAccessToken = jwtTokenUtil.generateAccessToken(userDetails);
+            String newRefreshToken = jwtTokenUtil.generateRefreshToken(userDetails);
 
             // 기존 Refresh Token 무효화
             jwtTokenUtil.invalidateRefreshToken(refreshToken);

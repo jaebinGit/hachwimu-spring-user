@@ -37,8 +37,7 @@ public class JwtTokenUtil {
         this.publicKey = keyPair.getPublic();
     }
 
-
-    // Access Token 생성 (RS256 알고리즘 사용)
+    // Access Token 생성
     public String generateAccessToken(UserDetails userDetails) {
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
@@ -57,14 +56,21 @@ public class JwtTokenUtil {
                 .signWith(privateKey, SignatureAlgorithm.RS256)
                 .compact();
 
-        // Redis에 Refresh Token 저장
         redisTemplate.opsForValue().set(refreshToken, userDetails.getUsername(), REFRESH_TOKEN_VALIDITY, TimeUnit.MILLISECONDS);
         return refreshToken;
     }
 
-    // Refresh Token 유효성 확인 (블랙리스트 확인)
-    public Boolean validateRefreshToken(String refreshToken) {
-        return redisTemplate.hasKey(refreshToken);
+    // Access Token 블랙리스트 추가
+    public void invalidateAccessToken(String token) {
+        long remainingValidity = getRemainingValidity(token);
+        if (remainingValidity > 0) {
+            redisTemplate.opsForValue().set(BLACKLIST_PREFIX + token, true, remainingValidity, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    // Access Token 블랙리스트 확인
+    public boolean isAccessTokenBlacklisted(String token) {
+        return Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + token));
     }
 
     // JWT에서 사용자명 추출
@@ -77,11 +83,13 @@ public class JwtTokenUtil {
                 .getSubject();
     }
 
+    // Access Token 검증
     public Boolean validateToken(String token, UserDetails userDetails) {
-        // JWT에서 사용자명 추출
-        String username = getUsernameFromToken(token);
+        if (isAccessTokenBlacklisted(token)) {
+            return false; // 토큰이 블랙리스트에 있음
+        }
 
-        // 토큰이 만료되지 않았는지 확인하고, 토큰에 있는 사용자명과 UserDetails의 사용자명이 일치하는지 확인
+        String username = getUsernameFromToken(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
@@ -96,8 +104,27 @@ public class JwtTokenUtil {
         return expiration.before(new Date());
     }
 
+    // 토큰의 남은 유효 시간 계산
+    private long getRemainingValidity(String token) {
+        Date expiration = Jwts.parserBuilder()
+                .setSigningKey(publicKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration();
+        return expiration.getTime() - System.currentTimeMillis();
+    }
+
     public void invalidateRefreshToken(String refreshToken) {
-        // Redis에서 Refresh Token 삭제 (무효화)
         redisTemplate.delete(refreshToken);
+    }
+
+    public Boolean validateRefreshToken(String refreshToken) {
+        return redisTemplate.hasKey(refreshToken);
+    }
+
+    // Getter for ACCESS_TOKEN_VALIDITY
+    public long getAccessTokenValidity() {
+        return ACCESS_TOKEN_VALIDITY;
     }
 }

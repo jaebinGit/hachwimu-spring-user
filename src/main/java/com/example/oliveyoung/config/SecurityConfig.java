@@ -1,6 +1,5 @@
 package com.example.oliveyoung.config;
 
-import com.example.oliveyoung.service.JwtUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,14 +16,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final JwtUserDetailsService jwtUserDetailsService;
     private final JwtRequestFilter jwtRequestFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
-    public SecurityConfig(JwtUserDetailsService jwtUserDetailsService,
-                          JwtRequestFilter jwtRequestFilter,
+    public SecurityConfig(JwtRequestFilter jwtRequestFilter,
                           JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
-        this.jwtUserDetailsService = jwtUserDetailsService;
         this.jwtRequestFilter = jwtRequestFilter;
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
     }
