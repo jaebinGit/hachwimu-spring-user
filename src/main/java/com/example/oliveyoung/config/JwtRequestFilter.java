@@ -33,14 +33,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String jwtToken = null;
         String username = null;
 
-        // Access Token을 쿠키에서 가져옴
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if (cookie.getName().equals("accessToken")) {
-                    jwtToken = cookie.getValue();
-                    break;
-                }
-            }
+        // Authorization 헤더에서 토큰 추출
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            jwtToken = bearerToken.substring(7);  // "Bearer " 이후의 토큰 값만 추출
         }
 
         if (jwtToken != null) {

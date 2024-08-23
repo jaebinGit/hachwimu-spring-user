@@ -34,12 +34,12 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody User user, HttpServletResponse response) {
+    public ResponseEntity<?> login(@RequestBody User user) {
         try {
-            JwtResponse jwtResponse = userService.login(user, response);
+            JwtResponse jwtResponse = userService.login(user);
 
-            // Access Token만 클라이언트 측에 저장
-            return ResponseEntity.ok("Logged in successfully");
+            // 클라이언트가 access token과 refresh token을 직접 처리하도록 변경
+            return ResponseEntity.ok(jwtResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -60,19 +60,13 @@ public class UserController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@CookieValue("refreshToken") String refreshToken, HttpServletResponse response) {
+    public ResponseEntity<?> refreshToken(@CookieValue("refreshToken") String refreshToken) {
         try {
-            // Redis에 저장된 Refresh Token을 검증 후 새로운 Access Token 발급
+            // Refresh Token을 이용하여 Access Token 갱신
             JwtResponse jwtResponse = userService.refreshAccessToken(refreshToken);
 
-            // 새롭게 발급된 Access Token을 쿠키에 저장
-            Cookie accessTokenCookie = new Cookie("accessToken", jwtResponse.getAccessToken());
-            accessTokenCookie.setHttpOnly(true);  // JavaScript에서 접근 불가
-            accessTokenCookie.setPath("/");
-            accessTokenCookie.setMaxAge(15 * 60);  // 15분
-            response.addCookie(accessTokenCookie);
-
-            return ResponseEntity.ok("Token refreshed successfully");
+            // 새롭게 발급된 Access Token을 클라이언트로 반환
+            return ResponseEntity.ok(jwtResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

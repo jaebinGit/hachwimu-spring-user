@@ -33,7 +33,7 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
     // 로그인 처리
-    public JwtResponse login(User user, HttpServletResponse response) throws Exception {
+    public JwtResponse login(User user) throws Exception {
         // 인증 수행
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
@@ -46,14 +46,7 @@ public class UserService {
         String accessToken = jwtTokenUtil.generateAccessToken(userDetails);
         String refreshToken = jwtTokenUtil.generateRefreshToken(userDetails);
 
-        // Access Token을 쿠키에 저장
-        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setSecure(true);
-        accessTokenCookie.setMaxAge((int) jwtTokenUtil.getAccessTokenValidity() / 1000);
-        accessTokenCookie.setPath("/");
-        response.addCookie(accessTokenCookie);
-
+        // 더 이상 Access Token을 쿠키에 저장하지 않음
         return new JwtResponse(accessToken, refreshToken);
     }
 
