@@ -34,6 +34,20 @@ jobs:
           TAG=${{ github.sha }}
           docker build --platform linux/amd64 \
             --build-arg SSH_PRIVATE_KEY_BUILD="${{ secrets.SSH_PRIVATE_KEY_BUILD }}" \
+            --build-arg SPRING_APPLICATION_NAME=oliveyoung \
+            --build-arg SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }} \
+            --build-arg SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }} \
+            --build-arg SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }} \
+            --build-arg SPRING_DATASOURCE_DRIVER_CLASS_NAME=${{ secrets.SPRING_DATASOURCE_DRIVER_CLASS_NAME }} \
+            --build-arg SPRING_JPA_HIBERNATE_DDL_AUTO=${{ secrets.SPRING_JPA_HIBERNATE_DDL_AUTO }} \
+            --build-arg SPRING_JPA_SHOW_SQL=${{ secrets.SPRING_JPA_SHOW_SQL }} \
+            --build-arg SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=${{ secrets.SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT }} \
+            --build-arg SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE=${{ secrets.SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE }} \
+            --build-arg SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE=${{ secrets.SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE }} \
+            --build-arg SPRING_DATASOURCE_HIKARI_IDLE_TIMEOUT=${{ secrets.SPRING_DATASOURCE_HIKARI_IDLE_TIMEOUT }} \
+            --build-arg SPRING_DATASOURCE_HIKARI_MAX_LIFETIME=${{ secrets.SPRING_DATASOURCE_HIKARI_MAX_LIFETIME }} \
+            --build-arg SPRING_DATA_REDIS_HOST=${{ secrets.SPRING_DATA_REDIS_HOST }} \
+            --build-arg SPRING_DATA_REDIS_PORT=${{ secrets.SPRING_DATA_REDIS_PORT }} \
             -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/hachwimu-user:$TAG .
 
       # 5. ECR에 도커 이미지 푸시
