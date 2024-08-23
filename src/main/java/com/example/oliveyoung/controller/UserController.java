@@ -5,7 +5,6 @@ import com.example.oliveyoung.dto.UserRegistrationRequest;
 import com.example.oliveyoung.dto.UserResponse;
 import com.example.oliveyoung.model.User;
 import com.example.oliveyoung.service.UserService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,9 +46,13 @@ public class UserController {
 
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@CookieValue("refreshToken") String refreshToken, String accessToken, HttpServletResponse response) {
-        userService.logout(refreshToken, accessToken);
+    public ResponseEntity<?> logout(@RequestHeader("Authorization") String accessToken) {
+        // accessToken에서 Bearer 제거
+        if (accessToken.startsWith("Bearer ")) {
+            accessToken = accessToken.substring(7);
+        }
 
+        userService.logout(accessToken);
         return ResponseEntity.ok("Logged out successfully");
     }
 

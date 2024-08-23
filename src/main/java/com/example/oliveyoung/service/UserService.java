@@ -49,9 +49,15 @@ public class UserService {
     }
 
     // 로그아웃 처리
-    public void logout(String refreshToken, String accessToken) {
-        jwtTokenUtil.invalidateRefreshToken(refreshToken); // Refresh Token 무효화
-        jwtTokenUtil.invalidateAccessToken(accessToken);   // Access Token 블랙리스트 추가
+    public void logout(String accessToken) {
+        // accessToken으로부터 사용자 이름 추출
+        String username = jwtTokenUtil.getUsernameFromToken(accessToken);
+
+        // Redis에서 해당 사용자의 refreshToken 제거
+        String refreshToken = jwtTokenUtil.getRefreshTokenFromRedis(username);
+        if (refreshToken != null) {
+            jwtTokenUtil.invalidateRefreshToken(refreshToken); // Refresh Token 무효화
+        }
     }
 
     // Refresh Token을 이용한 Access Token 갱신

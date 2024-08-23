@@ -57,19 +57,6 @@ public class JwtTokenUtil {
         return refreshToken;
     }
 
-    // Access Token 블랙리스트 추가
-    public void invalidateAccessToken(String token) {
-        long remainingValidity = getRemainingValidity(token);
-        if (remainingValidity > 0) {
-            redisTemplate.opsForValue().set(BLACKLIST_PREFIX + token, true, remainingValidity, TimeUnit.MILLISECONDS);
-        }
-    }
-
-    // Access Token 블랙리스트 확인
-    public boolean isAccessTokenBlacklisted(String token) {
-        return Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + token));
-    }
-
     // JWT에서 사용자명 추출
     public String getUsernameFromToken(String token) {
         return Jwts.parserBuilder()
@@ -82,9 +69,6 @@ public class JwtTokenUtil {
 
     // Access Token 검증
     public Boolean validateToken(String token, UserDetails userDetails) {
-        if (isAccessTokenBlacklisted(token)) {
-            return false;
-        }
         String username = getUsernameFromToken(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
@@ -100,17 +84,6 @@ public class JwtTokenUtil {
         return expiration.before(new Date());
     }
 
-    // 토큰의 남은 유효 시간 계산
-    private long getRemainingValidity(String token) {
-        Date expiration = Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getExpiration();
-        return expiration.getTime() - System.currentTimeMillis();
-    }
-
     // Refresh Token 무효화
     public void invalidateRefreshToken(String refreshToken) {
         redisTemplate.delete(refreshToken);
@@ -119,5 +92,10 @@ public class JwtTokenUtil {
     // Refresh Token 검증
     public Boolean validateRefreshToken(String refreshToken) {
         return redisTemplate.hasKey(refreshToken);
+    }
+
+    // Redis에서 사용자 이름으로 refreshToken 찾기
+    public String getRefreshTokenFromRedis(String username) {
+        return (String) redisTemplate.opsForValue().get(username);
     }
 }
