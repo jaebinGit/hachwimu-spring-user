@@ -56,38 +56,13 @@ jobs:
           git config --global user.name "jaebinGit"
           git config --global user.email "tnwoql327@gmail.com"
 
-      # 8. 환경 변수 치환 및 `deploy.yaml` 생성
-      - name: Substitute environment variables in the Kubernetes deployment template
-        run: |
-          export TAG=${{ github.sha }}
-          export SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}
-          export SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}
-          export SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}
-          export SPRING_DATASOURCE_DRIVER_CLASS_NAME=${{ secrets.SPRING_DATASOURCE_DRIVER_CLASS_NAME }}
-          export SPRING_JPA_HIBERNATE_DDL_AUTO=${{ secrets.SPRING_JPA_HIBERNATE_DDL_AUTO }}
-          export SPRING_JPA_SHOW_SQL=${{ secrets.SPRING_JPA_SHOW_SQL }}
-          export SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=${{ secrets.SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT }}
-          export SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE=${{ secrets.SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE }}
-          export SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE=${{ secrets.SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE }}
-          export SPRING_DATASOURCE_HIKARI_IDLE_TIMEOUT=${{ secrets.SPRING_DATASOURCE_HIKARI_IDLE_TIMEOUT }}
-          export SPRING_DATASOURCE_HIKARI_MAX_LIFETIME=${{ secrets.SPRING_DATASOURCE_HIKARI_MAX_LIFETIME }}
-          export SPRING_DATA_REDIS_HOST=${{ secrets.SPRING_DATA_REDIS_HOST }}
-          export SPRING_DATA_REDIS_PORT=${{ secrets.SPRING_DATA_REDIS_PORT }}
-
-          # deploy.yaml.template에서 환경 변수 치환 후 deploy.yaml 생성
-          envsubst < deploy.yaml.template > deploy.yaml
-
-
-      # 9. IaC Private Repo에 이미지 태그 업데이트 (Argo CD 자동 배포)
+      # 8. IaC Private Repo에 이미지 태그 업데이트 (Argo CD 자동 배포)
       - name: Clone IaC Repo and Update Tag
         run: |
           TAG=${{ github.sha }}
           git clone git@github.com:JinsuYeo/hachwimu-iac.git
           cd hachwimu-iac
-          
-          # deploy.yaml 파일을 IaC repo로 복사하여 Argo CD 자동 배포를 트리거
-          cp ../deploy.yaml ./
-          
+
           sed -i "s|image: .*hachwimu-user:.*$|image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/hachwimu-user:${TAG}|g" deployment.yaml
           
           git add deployment.yaml
