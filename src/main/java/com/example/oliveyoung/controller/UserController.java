@@ -38,25 +38,13 @@ public class UserController {
         try {
             JwtResponse jwtResponse = userService.login(user, response);
 
-            // Access token을 쿠키에 저장
-            Cookie accessTokenCookie = new Cookie("accessToken", jwtResponse.getAccessToken());
-            accessTokenCookie.setHttpOnly(true);  // JavaScript에서 접근 불가
-            accessTokenCookie.setPath("/");
-            accessTokenCookie.setMaxAge(15 * 60);  // 15분
-            response.addCookie(accessTokenCookie);
-
-            // Refresh token을 쿠키에 저장
-            Cookie refreshTokenCookie = new Cookie("refreshToken", jwtResponse.getRefreshToken());
-            refreshTokenCookie.setHttpOnly(true);
-            refreshTokenCookie.setPath("/");
-            refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);  // 7일
-            response.addCookie(refreshTokenCookie);
-
+            // Access Token만 클라이언트 측에 저장
             return ResponseEntity.ok("Logged in successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@CookieValue("refreshToken") String refreshToken, String accessToken, HttpServletResponse response) {
@@ -68,17 +56,13 @@ public class UserController {
         accessTokenCookie.setPath("/");
         response.addCookie(accessTokenCookie);
 
-        Cookie refreshTokenCookie = new Cookie("refreshToken", null);
-        refreshTokenCookie.setMaxAge(0);
-        refreshTokenCookie.setPath("/");
-        response.addCookie(refreshTokenCookie);
-
         return ResponseEntity.ok("Logged out successfully");
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@CookieValue("refreshToken") String refreshToken, HttpServletResponse response) {
         try {
+            // Redis에 저장된 Refresh Token을 검증 후 새로운 Access Token 발급
             JwtResponse jwtResponse = userService.refreshAccessToken(refreshToken);
 
             // 새롭게 발급된 Access Token을 쿠키에 저장

@@ -49,6 +49,7 @@ public class UserService {
         // Access Token을 쿠키에 저장
         Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
         accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setSecure(true);
         accessTokenCookie.setMaxAge((int) jwtTokenUtil.getAccessTokenValidity() / 1000);
         accessTokenCookie.setPath("/");
         response.addCookie(accessTokenCookie);
@@ -63,7 +64,6 @@ public class UserService {
     }
 
     // Refresh Token을 이용한 Access Token 갱신
-    // Access Token 재발급
     public JwtResponse refreshAccessToken(String refreshToken) throws Exception {
         if (jwtTokenUtil.validateRefreshToken(refreshToken)) {
             String username = jwtTokenUtil.getUsernameFromToken(refreshToken);
