@@ -1,12 +1,10 @@
 package com.example.oliveyoung.service;
 
+import com.example.oliveyoung.config.JwtTokenUtil;
 import com.example.oliveyoung.dto.JwtResponse;
 import com.example.oliveyoung.dto.UserRegistrationRequest;
 import com.example.oliveyoung.model.User;
 import com.example.oliveyoung.repository.UserRepository;
-import com.example.oliveyoung.config.JwtTokenUtil;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

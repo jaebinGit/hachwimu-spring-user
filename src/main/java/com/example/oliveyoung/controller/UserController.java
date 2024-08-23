@@ -38,7 +38,7 @@ public class UserController {
         try {
             JwtResponse jwtResponse = userService.login(user);
 
-            // 클라이언트가 access token과 refresh token을 직접 처리하도록 변경
+            // 클라이언트가 access token을 직접 처리하도록 변경
             return ResponseEntity.ok(jwtResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -49,12 +49,6 @@ public class UserController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@CookieValue("refreshToken") String refreshToken, String accessToken, HttpServletResponse response) {
         userService.logout(refreshToken, accessToken);
-
-        // 쿠키에서 토큰 제거
-        Cookie accessTokenCookie = new Cookie("accessToken", null);
-        accessTokenCookie.setMaxAge(0);  // 쿠키 삭제
-        accessTokenCookie.setPath("/");
-        response.addCookie(accessTokenCookie);
 
         return ResponseEntity.ok("Logged out successfully");
     }
