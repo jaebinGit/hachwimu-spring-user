@@ -3,7 +3,6 @@ FROM openjdk:17-jdk-slim AS build
 
 # Set environment variables for build
 ENV APP_HOME=/app \
-    JAVA_OPTS="-Xms512m -Xmx1024m" \
     GRADLE_USER_HOME=/app/.gradle
 
 # Set the working directory
