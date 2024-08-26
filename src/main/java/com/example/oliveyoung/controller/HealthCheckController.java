@@ -8,12 +8,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping
+@RequestMapping("/user")
 public class HealthCheckController {
 
     private static final Logger logger = LoggerFactory.getLogger(HealthCheckController.class);
 
-    @GetMapping
+    @GetMapping("/health")
     public String userHealthCheck() {
         logger.info("user에서 health check를 받았습니다.");
         return "User service is healthy!";
