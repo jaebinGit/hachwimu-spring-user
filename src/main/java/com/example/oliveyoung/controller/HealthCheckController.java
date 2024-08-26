@@ -13,7 +13,7 @@ public class HealthCheckController {
 
     private static final Logger logger = LoggerFactory.getLogger(HealthCheckController.class);
 
-    @GetMapping("/health")
+    @GetMapping
     public String userHealthCheck() {
         logger.info("user에서 health check를 받았습니다.");
         return "User service is healthy!";
