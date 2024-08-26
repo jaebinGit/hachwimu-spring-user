@@ -48,9 +48,6 @@ dependencies {
 	// Testing dependencies
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
-
-	//datadog
-	implementation 'com.datadoghq:dd-java-agent:latest'  // 최신 버전 확인
 }
 
 tasks.named('test') {
