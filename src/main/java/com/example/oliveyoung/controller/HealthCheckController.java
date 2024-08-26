@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping
 public class HealthCheckController {
 
     private static final Logger logger = LoggerFactory.getLogger(HealthCheckController.class);
@@ -16,7 +16,7 @@ public class HealthCheckController {
     // /user/health 요청을 처리하는 메서드
     @GetMapping("/health")
     public String userHealthCheck() {
-        logger.info("User에서 health check를 받았습니다.");
+        logger.info("user에서 health check를 받았습니다.");
         return "User service is healthy!";
     }
 }
