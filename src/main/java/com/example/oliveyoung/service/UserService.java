@@ -27,7 +27,6 @@ public class UserService {
             throw new Exception("이미 존재하는 사용자명입니다.");
         }
 
-        // 사용자 엔티티 생성
         User user = new User();
         user.setUsername(registrationRequest.getUsername());
         user.setPassword(registrationRequest.getPassword());
