@@ -54,7 +54,7 @@ jobs:
       - name: Push to Amazon ECR
         run: |
           TAG=${{ github.sha }}
-          REGION=ap-northeast-2
+          REGION=us-east-1
           REPOSITORY_NAME=hachwimu-user
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY_NAME:$TAG
 
